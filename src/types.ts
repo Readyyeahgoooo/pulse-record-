@@ -2,6 +2,7 @@ export interface StudentData {
   subject: string;
   topic: string;
   score: number;
+  studentIdentifier?: string;
   strengths: string[];
   weaknesses: string[];
   commonMistakes: string[];
@@ -41,4 +42,52 @@ export interface ProgressEvaluation {
   comparison: string;
   status: 'improved' | 'stagnant' | 'declined';
   adjusted_plan: string[];
+}
+
+export type UserRole = 'teacher' | 'student' | 'admin';
+
+export type ReportStatus = 'draft' | 'approved';
+
+export interface PrivacySettings {
+  anonymizeBeforeAI: boolean;
+  localOnlyStorage: boolean;
+}
+
+export interface DiagnosisReport {
+  id: string;
+  createdAt: string;
+  createdBy: UserRole;
+  subject: string;
+  topic: string;
+  studentIdentifier: string;
+  anonymized: boolean;
+  status: ReportStatus;
+  teacherNotes: string;
+  diagnosis: AIDiagnosisResponse;
+}
+
+export interface ComplianceLogEntry {
+  id: string;
+  timestamp: string;
+  actor: UserRole;
+  action:
+    | 'diagnosis_requested'
+    | 'diagnosis_generated'
+    | 'diagnosis_blocked'
+    | 'report_approved'
+    | 'progress_evaluated'
+    | 'report_exported';
+  anonymized: boolean;
+  subject: string;
+  details: string;
+}
+
+export interface EDBChecklistStatus {
+  requiredSubjects: number;
+  coveredSubjects: number;
+  requiredTeachingCases: number;
+  generatedTeachingCases: number;
+  hasTeacherApprovalFlow: boolean;
+  hasPrivacyNotice: boolean;
+  readyForFundingDraft: boolean;
 }

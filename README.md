@@ -1,20 +1,80 @@
-<div align="center">
-<img width="1200" height="475" alt="GHBanner" src="https://github.com/user-attachments/assets/0aa67016-6eaf-458a-adb2-6e31a0763ed6" />
-</div>
+# EduPulse Safe AI Classroom (Funding-Ready MVP)
 
-# Run and deploy your AI Studio app
+EduPulse is an EDB-aligned AI teaching assistant prototype for Hong Kong schools, designed around four funding-critical requirements:
 
-This contains everything you need to run your app locally.
+1. EDB framework alignment
+2. Privacy and safety by design
+3. Teacher-governed workflow
+4. Compliance report generation
 
-View your app in AI Studio: https://ai.studio/apps/df25e3e0-9f47-40b9-853f-dc0a4138a7b1
+This repository now goes beyond a pure prompt demo and includes governance controls needed for pilot deployment and funding documentation.
 
-## Run Locally
+## What is implemented
 
-**Prerequisites:**  Node.js
+### 1) EDB Alignment
+- Multi-subject tracking from generated reports
+- Funding readiness checklist in UI (`EDB Governance` tab)
+- Teaching-case counter based on teacher-approved reports
 
+### 2) Privacy and Safety
+- Optional anonymization before AI call (student identifier masking)
+- Local-only storage option for reports and logs
+- Content safety filter to block unsafe model output before release
 
-1. Install dependencies:
-   `npm install`
-2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
-3. Run the app:
-   `npm run dev`
+### 3) Teacher Workflow Integration
+- Role switching: `Teacher`, `Student`, `Admin`
+- AI output is created as a **draft** report
+- Student can only view teacher-approved reports
+- Teacher note + approval gate before release
+
+### 4) Compliance Reporting
+- Structured audit logs for key actions
+- CSV export for compliance logs
+- JSON export for funding package draft data
+
+## Run locally
+
+Prerequisite: Node.js 20+
+
+1. Install dependencies
+   - `npm install`
+2. Create `.env.local` and set:
+   - `GEMINI_API_KEY=your_key`
+   - `GEMINI_MODEL=gemini-2.5-pro`
+   - `SCHOOL_NAME=your_pilot_school`
+3. Start app
+   - `npm run dev`
+4. For end-to-end local testing with API routes
+   - `npm run dev:full`
+
+## Current architecture notes
+
+- Storage: browser `localStorage` only (MVP mode)
+- AI model: Google Gemini via Vercel serverless functions in `api/`
+- Build: Vite + React + Tailwind
+
+## Deploy to Vercel
+
+1. Push this repo to GitHub
+2. Import the repo into Vercel
+3. Set environment variables in Vercel:
+   - `GEMINI_API_KEY`
+   - `GEMINI_MODEL`
+   - `SCHOOL_NAME`
+4. Deploy
+
+## Information still requiring your input
+
+- Real school or organization name for funding exports
+- Production Gemini API key and approved model choice
+- Privacy policy / consent wording for the pilot school
+- Real teacher/admin authentication provider
+- Final funding report schema required by your target program
+
+## Suggested next steps for school pilots
+
+1. Add real auth + role-based access control (teacher/student/admin accounts)
+2. Move storage to managed DB with encryption and audit retention policies
+3. Add school-level settings (retention period, export templates, policy text)
+4. Add curriculum mapping fields for HK subject outcomes
+5. Add report templates aligned with target funding application format
