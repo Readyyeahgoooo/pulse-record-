@@ -566,8 +566,9 @@ export default function App() {
                     <h3 className="text-lg font-semibold mb-4">Information You Still Need To Fill</h3>
                     <ul className="space-y-3 text-sm text-gray-700">
                       <li>School name: currently `{schoolName}` and should be replaced with the pilot school.</li>
-                      <li>Production `GEMINI_API_KEY`: must be added in Vercel project environment variables.</li>
-                      <li>Production `GEMINI_MODEL`: confirm the exact model your budget and quota can support.</li>
+                      <li>Production `OPENROUTER_API_KEY`: must be added in Vercel project environment variables.</li>
+                      <li>Production `OPENROUTER_MODEL`: confirm the exact model your budget and quota can support.</li>
+                      <li>Production `APP_URL`: set the public Vercel domain for OpenRouter request headers.</li>
                       <li>Privacy policy text: add the school-specific data retention and consent wording.</li>
                       <li>Teacher/admin identity: current role switch is demo-only and must be replaced with real login.</li>
                       <li>Funding report format: adapt exported JSON to the exact template your target grant requires.</li>

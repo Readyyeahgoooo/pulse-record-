@@ -39,8 +39,9 @@ Prerequisite: Node.js 20+
 1. Install dependencies
    - `npm install`
 2. Create `.env.local` and set:
-   - `GEMINI_API_KEY=your_key`
-   - `GEMINI_MODEL=gemini-2.5-pro`
+   - `OPENROUTER_API_KEY=your_key`
+   - `OPENROUTER_MODEL=openai/gpt-4.1-mini`
+   - `APP_URL=http://localhost:3000`
    - `SCHOOL_NAME=your_pilot_school`
 3. Start app
    - `npm run dev`
@@ -50,7 +51,7 @@ Prerequisite: Node.js 20+
 ## Current architecture notes
 
 - Storage: browser `localStorage` only (MVP mode)
-- AI model: Google Gemini via Vercel serverless functions in `api/`
+- AI model: OpenRouter via Vercel serverless functions in `api/`
 - Build: Vite + React + Tailwind
 
 ## Deploy to Vercel
@@ -58,15 +59,16 @@ Prerequisite: Node.js 20+
 1. Push this repo to GitHub
 2. Import the repo into Vercel
 3. Set environment variables in Vercel:
-   - `GEMINI_API_KEY`
-   - `GEMINI_MODEL`
+   - `OPENROUTER_API_KEY`
+   - `OPENROUTER_MODEL`
+   - `APP_URL`
    - `SCHOOL_NAME`
 4. Deploy
 
 ## Information still requiring your input
 
 - Real school or organization name for funding exports
-- Production Gemini API key and approved model choice
+- Production OpenRouter API key and approved model choice
 - Privacy policy / consent wording for the pilot school
 - Real teacher/admin authentication provider
 - Final funding report schema required by your target program

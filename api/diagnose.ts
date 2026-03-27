@@ -1,5 +1,5 @@
 import type { StudentData, StudentProfile } from '../src/types';
-import { generateDiagnosis } from './_lib/gemini';
+import { generateDiagnosis } from './_lib/openrouter';
 
 type RequestLike = {
   method?: string;

@@ -1,5 +1,5 @@
 import type { StudentData } from '../src/types';
-import { generateProgressEvaluation } from './_lib/gemini';
+import { generateProgressEvaluation } from './_lib/openrouter';
 
 type RequestLike = {
   method?: string;
