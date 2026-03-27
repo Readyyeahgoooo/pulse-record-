@@ -1,5 +1,3 @@
-import type { AIDiagnosisResponse, ProgressEvaluation, StudentData, StudentProfile } from '../../src/types';
-
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions';
 
 const SYSTEM_INSTRUCTION = `You are an AI educational diagnostic engine designed for secondary school students.
@@ -23,9 +21,26 @@ You must always:
 Output MUST follow the required JSON format.`;
 
 export async function generateDiagnosis(
-  data: StudentData,
-  profile: StudentProfile,
-): Promise<AIDiagnosisResponse> {
+  data: {
+    subject: string;
+    topic: string;
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+    commonMistakes: string[];
+  },
+  profile: {
+    learningStyle: string;
+    englishComprehension: string;
+    attentionSpan: string;
+  },
+): Promise<{
+  diagnosis: string;
+  root_causes: string[];
+  improvement_plan: { week_1: string[]; week_2: string[] };
+  practice_questions: Array<{ question: string; skill_targeted: string; reason: string }>;
+  teacher_summary: { key_concerns: string[]; actionable_strategies: string[] };
+}> {
   const prompt = `You are given a student's recent mock exam results and mistakes.
 
 Subject: ${data.subject}
@@ -54,7 +69,7 @@ Task:
    - 3 bullet key concerns
    - 3 actionable teaching strategies
 
-Output in JSON format:
+Return JSON only, with this structure:
 {
   "diagnosis": "Detailed diagnosis string",
   "root_causes": ["Cause 1", "Cause 2"],
@@ -75,14 +90,24 @@ Output in JSON format:
   }
 }`;
 
-  const content = await requestOpenRouter(prompt, diagnosisSchema);
-  return parseJsonResponse<AIDiagnosisResponse>(content);
+  const content = await requestOpenRouter(prompt);
+  return parseJsonResponse(content);
 }
 
 export async function generateProgressEvaluation(
   previousWeaknesses: string[],
-  newResults: StudentData,
-): Promise<ProgressEvaluation> {
+  newResults: {
+    subject: string;
+    topic: string;
+    score: number;
+    strengths: string[];
+    weaknesses: string[];
+  },
+): Promise<{
+  comparison: string;
+  status: 'improved' | 'stagnant' | 'declined';
+  adjusted_plan: string[];
+}> {
   const prompt = `Based on previous performance and improvement plan, evaluate whether the student has improved.
 
 Previous weaknesses: ${previousWeaknesses.join(', ')}
@@ -98,18 +123,18 @@ Task:
 2. Identify improvement / stagnation
 3. Adjust learning plan
 
-Output in JSON format:
+Return JSON only, with this structure:
 {
   "comparison": "Detailed comparison string",
   "status": "improved" | "stagnant" | "declined",
   "adjusted_plan": ["Step 1", "Step 2"]
 }`;
 
-  const content = await requestOpenRouter(prompt, progressSchema);
-  return parseJsonResponse<ProgressEvaluation>(content);
+  const content = await requestOpenRouter(prompt);
+  return parseJsonResponse(content);
 }
 
-async function requestOpenRouter(prompt: string, schema: object): Promise<string> {
+async function requestOpenRouter(prompt: string): Promise<string> {
   const apiKey = process.env.OPENROUTER_API_KEY;
   if (!apiKey) {
     throw new Error('Missing OPENROUTER_API_KEY on server.');
@@ -125,14 +150,6 @@ async function requestOpenRouter(prompt: string, schema: object): Promise<string
         { role: 'user', content: prompt },
       ],
       temperature: 0.2,
-      response_format: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'edu_pulse_response',
-          strict: true,
-          schema,
-        },
-      },
     }),
   });
 
@@ -146,7 +163,7 @@ async function requestOpenRouter(prompt: string, schema: object): Promise<string
     throw new Error('OpenRouter returned an empty response.');
   }
 
-  return content;
+  return extractJsonText(content);
 }
 
 function buildHeaders(apiKey: string): HeadersInit {
@@ -174,12 +191,23 @@ function getRefererUrl(): string | undefined {
   return undefined;
 }
 
-function parseJsonResponse<T>(text: string): T {
+function parseJsonResponse(text: string) {
   try {
-    return JSON.parse(text) as T;
+    return JSON.parse(text);
   } catch {
     throw new Error('AI response was not valid JSON.');
   }
+}
+
+function extractJsonText(value: string): string {
+  const trimmed = value.trim();
+  if (trimmed.startsWith('```')) {
+    return trimmed
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/\s*```$/, '');
+  }
+  return trimmed;
 }
 
 type OpenRouterResponse = {
@@ -191,77 +219,4 @@ type OpenRouterResponse = {
   error?: {
     message?: string;
   };
-};
-
-const diagnosisSchema = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    diagnosis: { type: 'string' },
-    root_causes: {
-      type: 'array',
-      items: { type: 'string' },
-    },
-    improvement_plan: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        week_1: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        week_2: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-      },
-      required: ['week_1', 'week_2'],
-    },
-    practice_questions: {
-      type: 'array',
-      items: {
-        type: 'object',
-        additionalProperties: false,
-        properties: {
-          question: { type: 'string' },
-          skill_targeted: { type: 'string' },
-          reason: { type: 'string' },
-        },
-        required: ['question', 'skill_targeted', 'reason'],
-      },
-    },
-    teacher_summary: {
-      type: 'object',
-      additionalProperties: false,
-      properties: {
-        key_concerns: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-        actionable_strategies: {
-          type: 'array',
-          items: { type: 'string' },
-        },
-      },
-      required: ['key_concerns', 'actionable_strategies'],
-    },
-  },
-  required: ['diagnosis', 'root_causes', 'improvement_plan', 'practice_questions', 'teacher_summary'],
-};
-
-const progressSchema = {
-  type: 'object',
-  additionalProperties: false,
-  properties: {
-    comparison: { type: 'string' },
-    status: {
-      type: 'string',
-      enum: ['improved', 'stagnant', 'declined'],
-    },
-    adjusted_plan: {
-      type: 'array',
-      items: { type: 'string' },
-    },
-  },
-  required: ['comparison', 'status', 'adjusted_plan'],
 };

@@ -1,4 +1,3 @@
-import type { StudentData, StudentProfile } from '../src/types';
 import { generateDiagnosis } from './_lib/openrouter';
 import {
   applySecurityHeaders,
@@ -15,8 +14,19 @@ type RequestLike = {
     remoteAddress?: string;
   };
   body?: {
-    studentData?: StudentData;
-    profile?: StudentProfile;
+    studentData?: {
+      subject?: string;
+      topic?: string;
+      score?: number;
+      strengths?: string[];
+      weaknesses?: string[];
+      commonMistakes?: string[];
+    };
+    profile?: {
+      learningStyle?: string;
+      englishComprehension?: string;
+      attentionSpan?: string;
+    };
   };
 };
 
@@ -62,22 +72,47 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
   }
 }
 
-function isValidStudentData(value: unknown): value is StudentData {
+function isValidStudentData(value: unknown): value is {
+  subject: string;
+  topic: string;
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  commonMistakes: string[];
+} {
   if (!value || typeof value !== 'object') return false;
-  const data = value as StudentData;
+  const data = value as {
+    subject?: string;
+    topic?: string;
+    score?: number;
+    strengths?: unknown[];
+    weaknesses?: unknown[];
+    commonMistakes?: unknown[];
+  };
   return (
     typeof data.subject === 'string' &&
     typeof data.topic === 'string' &&
     typeof data.score === 'number' &&
     Array.isArray(data.strengths) &&
     Array.isArray(data.weaknesses) &&
-    Array.isArray(data.commonMistakes)
+    Array.isArray(data.commonMistakes) &&
+    data.strengths.every((item) => typeof item === 'string') &&
+    data.weaknesses.every((item) => typeof item === 'string') &&
+    data.commonMistakes.every((item) => typeof item === 'string')
   );
 }
 
-function isValidStudentProfile(value: unknown): value is StudentProfile {
+function isValidStudentProfile(value: unknown): value is {
+  learningStyle: string;
+  englishComprehension: string;
+  attentionSpan: string;
+} {
   if (!value || typeof value !== 'object') return false;
-  const profile = value as StudentProfile;
+  const profile = value as {
+    learningStyle?: string;
+    englishComprehension?: string;
+    attentionSpan?: string;
+  };
   return (
     typeof profile.learningStyle === 'string' &&
     typeof profile.englishComprehension === 'string' &&

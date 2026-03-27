@@ -1,4 +1,3 @@
-import type { StudentData } from '../src/types';
 import { generateProgressEvaluation } from './_lib/openrouter';
 import {
   applySecurityHeaders,
@@ -16,7 +15,14 @@ type RequestLike = {
   };
   body?: {
     previousWeaknesses?: string[];
-    newResults?: StudentData;
+    newResults?: {
+      subject?: string;
+      topic?: string;
+      score?: number;
+      strengths?: string[];
+      weaknesses?: string[];
+      commonMistakes?: string[];
+    };
   };
 };
 
@@ -66,15 +72,32 @@ function isValidWeaknessList(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((item) => typeof item === 'string');
 }
 
-function isValidStudentData(value: unknown): value is StudentData {
+function isValidStudentData(value: unknown): value is {
+  subject: string;
+  topic: string;
+  score: number;
+  strengths: string[];
+  weaknesses: string[];
+  commonMistakes: string[];
+} {
   if (!value || typeof value !== 'object') return false;
-  const data = value as StudentData;
+  const data = value as {
+    subject?: string;
+    topic?: string;
+    score?: number;
+    strengths?: unknown[];
+    weaknesses?: unknown[];
+    commonMistakes?: unknown[];
+  };
   return (
     typeof data.subject === 'string' &&
     typeof data.topic === 'string' &&
     typeof data.score === 'number' &&
     Array.isArray(data.strengths) &&
     Array.isArray(data.weaknesses) &&
-    Array.isArray(data.commonMistakes)
+    Array.isArray(data.commonMistakes) &&
+    data.strengths.every((item) => typeof item === 'string') &&
+    data.weaknesses.every((item) => typeof item === 'string') &&
+    data.commonMistakes.every((item) => typeof item === 'string')
   );
 }
