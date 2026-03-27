@@ -40,9 +40,10 @@ Prerequisite: Node.js 20+
    - `npm install`
 2. Create `.env.local` and set:
    - `OPENROUTER_API_KEY=your_key`
-   - `OPENROUTER_MODEL=openai/gpt-4.1-mini`
+   - `OPENROUTER_MODEL=openrouter/hunter-alpha`
    - `APP_URL=http://localhost:3000`
    - `SCHOOL_NAME=your_pilot_school`
+   - `ALLOWED_ORIGINS=http://localhost:3000`
 3. Start app
    - `npm run dev`
 4. For end-to-end local testing with API routes
@@ -54,6 +55,16 @@ Prerequisite: Node.js 20+
 - AI model: OpenRouter via Vercel serverless functions in `api/`
 - Build: Vite + React + Tailwind
 
+## Security hardening in this version
+
+- OpenRouter key remains server-side only
+- API routes reject disallowed browser origins
+- Basic per-IP rate limiting is enabled on serverless routes
+- Client-facing error messages are sanitized in production
+- Request payloads are validated before upstream AI calls
+
+This is better than a frontend-only Vite setup, but it is still not a substitute for real authentication and persistent server-side audit storage.
+
 ## Deploy to Vercel
 
 1. Push this repo to GitHub
@@ -62,6 +73,7 @@ Prerequisite: Node.js 20+
    - `OPENROUTER_API_KEY`
    - `OPENROUTER_MODEL`
    - `APP_URL`
+   - `ALLOWED_ORIGINS`
    - `SCHOOL_NAME`
 4. Deploy
 
@@ -72,6 +84,11 @@ Prerequisite: Node.js 20+
 - Privacy policy / consent wording for the pilot school
 - Real teacher/admin authentication provider
 - Final funding report schema required by your target program
+
+## Model note
+
+Default model is `openrouter/hunter-alpha`.
+Per the OpenRouter model page, prompts and completions for this model are logged by the provider and may be used to improve the model. Keep anonymization enabled for student data and do not send raw PII.
 
 ## Suggested next steps for school pilots
 

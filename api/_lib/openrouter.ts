@@ -119,7 +119,7 @@ async function requestOpenRouter(prompt: string, schema: object): Promise<string
     method: 'POST',
     headers: buildHeaders(apiKey),
     body: JSON.stringify({
-      model: process.env.OPENROUTER_MODEL || 'openai/gpt-4.1-mini',
+      model: process.env.OPENROUTER_MODEL || 'openrouter/hunter-alpha',
       messages: [
         { role: 'system', content: SYSTEM_INSTRUCTION },
         { role: 'user', content: prompt },

@@ -1,8 +1,19 @@
 import type { StudentData, StudentProfile } from '../src/types';
 import { generateDiagnosis } from './_lib/openrouter';
+import {
+  applySecurityHeaders,
+  attachRateLimitHeaders,
+  getSafeErrorMessage,
+  isAllowedOrigin,
+  rateLimit,
+} from './_lib/security';
 
 type RequestLike = {
   method?: string;
+  headers?: Record<string, string | string[] | undefined>;
+  socket?: {
+    remoteAddress?: string;
+  };
   body?: {
     studentData?: StudentData;
     profile?: StudentProfile;
@@ -16,7 +27,7 @@ type ResponseLike = {
 };
 
 export default async function handler(req: RequestLike, res: ResponseLike) {
-  res.setHeader('Cache-Control', 'no-store');
+  applySecurityHeaders(res);
 
   if (req.method !== 'POST') {
     res.setHeader('Allow', ['POST']);
@@ -24,9 +35,21 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
     return;
   }
 
+  if (!isAllowedOrigin(req)) {
+    res.status(403).json({ error: 'Origin not allowed.' });
+    return;
+  }
+
+  const limit = rateLimit(req, 'diagnose');
+  attachRateLimitHeaders(res, limit);
+  if (!limit.allowed) {
+    res.status(429).json({ error: 'Too many requests. Please slow down.' });
+    return;
+  }
+
   const { studentData, profile } = req.body || {};
-  if (!studentData || !profile) {
-    res.status(400).json({ error: 'Missing studentData or profile.' });
+  if (!isValidStudentData(studentData) || !isValidStudentProfile(profile)) {
+    res.status(400).json({ error: 'Invalid studentData or profile.' });
     return;
   }
 
@@ -34,7 +57,30 @@ export default async function handler(req: RequestLike, res: ResponseLike) {
     const diagnosis = await generateDiagnosis(studentData, profile);
     res.status(200).json(diagnosis);
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Diagnosis request failed.';
-    res.status(500).json({ error: message });
+    console.error('Diagnose API failed:', error);
+    res.status(500).json({ error: getSafeErrorMessage(error) });
   }
+}
+
+function isValidStudentData(value: unknown): value is StudentData {
+  if (!value || typeof value !== 'object') return false;
+  const data = value as StudentData;
+  return (
+    typeof data.subject === 'string' &&
+    typeof data.topic === 'string' &&
+    typeof data.score === 'number' &&
+    Array.isArray(data.strengths) &&
+    Array.isArray(data.weaknesses) &&
+    Array.isArray(data.commonMistakes)
+  );
+}
+
+function isValidStudentProfile(value: unknown): value is StudentProfile {
+  if (!value || typeof value !== 'object') return false;
+  const profile = value as StudentProfile;
+  return (
+    typeof profile.learningStyle === 'string' &&
+    typeof profile.englishComprehension === 'string' &&
+    typeof profile.attentionSpan === 'string'
+  );
 }

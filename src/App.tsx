@@ -567,12 +567,22 @@ export default function App() {
                     <ul className="space-y-3 text-sm text-gray-700">
                       <li>School name: currently `{schoolName}` and should be replaced with the pilot school.</li>
                       <li>Production `OPENROUTER_API_KEY`: must be added in Vercel project environment variables.</li>
-                      <li>Production `OPENROUTER_MODEL`: confirm the exact model your budget and quota can support.</li>
+                      <li>Production `OPENROUTER_MODEL`: currently defaults to `openrouter/hunter-alpha`.</li>
                       <li>Production `APP_URL`: set the public Vercel domain for OpenRouter request headers.</li>
+                      <li>Production `ALLOWED_ORIGINS`: list allowed frontend origins if you use custom domains.</li>
                       <li>Privacy policy text: add the school-specific data retention and consent wording.</li>
                       <li>Teacher/admin identity: current role switch is demo-only and must be replaced with real login.</li>
                       <li>Funding report format: adapt exported JSON to the exact template your target grant requires.</li>
                     </ul>
+                  </div>
+
+                  <div className="bg-amber-50 rounded-2xl border border-amber-200 p-6 shadow-sm">
+                    <h3 className="text-lg font-semibold mb-3 text-amber-900">Model Privacy Note</h3>
+                    <p className="text-sm text-amber-800 leading-relaxed">
+                      `Hunter Alpha` is configured as the default OpenRouter model. Provider documentation indicates prompts and
+                      completions are logged for this model, so anonymization should remain enabled and raw student personal data
+                      should not be sent upstream.
+                    </p>
                   </div>
 
                   <div className="bg-white rounded-2xl border border-gray-200 p-6 shadow-sm">
