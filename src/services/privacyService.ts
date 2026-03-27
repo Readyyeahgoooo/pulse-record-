@@ -10,6 +10,14 @@ const BLOCKED_TERMS = [
   'terrorist',
 ];
 
+const BLOCKED_PATTERNS = BLOCKED_TERMS.map((term) => {
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  if (term.includes(' ')) {
+    return new RegExp(`\\b${escaped}\\b`, 'i');
+  }
+  return new RegExp(`\\b${escaped}\\b`, 'i');
+});
+
 function maskIdentifier(value: string): string {
   const trimmed = value.trim();
   if (!trimmed) return 'STUDENT-ANON';
@@ -29,8 +37,7 @@ export function anonymizeStudentData(data: StudentData): StudentData {
 }
 
 function hasBlockedTerms(value: string): boolean {
-  const lowered = value.toLowerCase();
-  return BLOCKED_TERMS.some((term) => lowered.includes(term));
+  return BLOCKED_PATTERNS.some((pattern) => pattern.test(value));
 }
 
 export function containsUnsafeContent(response: AIDiagnosisResponse): boolean {
@@ -46,4 +53,3 @@ export function containsUnsafeContent(response: AIDiagnosisResponse): boolean {
   ];
   return textParts.some(hasBlockedTerms);
 }
-
