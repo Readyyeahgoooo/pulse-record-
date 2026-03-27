@@ -89,6 +89,10 @@ export default function App() {
 
   const checklist: EDBChecklistStatus = useMemo(() => buildChecklist(reports), [reports]);
   const approvedReports = useMemo(() => reports.filter((item) => item.status === 'approved'), [reports]);
+  const currentReport = useMemo(
+    () => reports.find((report) => report.id === currentReportId) || null,
+    [reports, currentReportId],
+  );
 
   useEffect(() => {
     if (privacy.localOnlyStorage) {
@@ -115,13 +119,22 @@ export default function App() {
       } else {
         setDiagnosis(null);
       }
+      return;
     }
-  }, [approvedReports, role]);
 
-  const currentReport = useMemo(
-    () => reports.find((report) => report.id === currentReportId) || null,
-    [reports, currentReportId],
-  );
+    if (currentReport) {
+      setDiagnosis(currentReport.diagnosis);
+      return;
+    }
+
+    const latestReport = reports[0];
+    if (latestReport) {
+      setCurrentReportId(latestReport.id);
+      setDiagnosis(latestReport.diagnosis);
+    } else {
+      setDiagnosis(null);
+    }
+  }, [approvedReports, currentReport, reports, role]);
 
   const addLog = (
     action: ComplianceLogEntry['action'],
