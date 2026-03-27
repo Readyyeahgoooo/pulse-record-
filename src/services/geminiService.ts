@@ -1,23 +1,32 @@
 import type { AIDiagnosisResponse, ProgressEvaluation, StudentData, StudentProfile } from '../types';
+import { buildDemoDiagnosis, buildDemoProgress } from './demoData';
 
 export async function diagnoseStudentPerformance(
   data: StudentData,
   profile: StudentProfile,
 ): Promise<AIDiagnosisResponse> {
-  return postJson<AIDiagnosisResponse>('/api/diagnose', {
-    studentData: data,
-    profile,
-  });
+  try {
+    return await postJson<AIDiagnosisResponse>('/api/diagnose', {
+      studentData: data,
+      profile,
+    });
+  } catch {
+    return buildDemoDiagnosis(data, profile);
+  }
 }
 
 export async function evaluateProgress(
   previousWeaknesses: string[],
   newResults: StudentData,
 ): Promise<ProgressEvaluation> {
-  return postJson<ProgressEvaluation>('/api/progress', {
-    previousWeaknesses,
-    newResults,
-  });
+  try {
+    return await postJson<ProgressEvaluation>('/api/progress', {
+      previousWeaknesses,
+      newResults,
+    });
+  } catch {
+    return buildDemoProgress(previousWeaknesses, newResults);
+  }
 }
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {

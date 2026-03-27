@@ -205,14 +205,15 @@ export default function App() {
   };
 
   const handleEvaluateProgress = async () => {
-    if (!prevWeaknesses.length) {
+    const baselineWeaknesses = prevWeaknesses.length ? prevWeaknesses : studentData.weaknesses;
+    if (!baselineWeaknesses.length) {
       setErrorMessage('Run diagnosis first before evaluating progress.');
       return;
     }
     setErrorMessage('');
     setLoading(true);
     try {
-      const result = await evaluateProgress(prevWeaknesses, studentData);
+      const result = await evaluateProgress(baselineWeaknesses, studentData);
       setProgress(result);
       addLog('progress_evaluated', 'Progress evaluation generated.');
       setActiveTab('progress');
